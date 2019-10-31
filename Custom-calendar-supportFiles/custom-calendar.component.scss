@@ -1,0 +1,44 @@
+.calendarWrapper{
+    display: inline-block;
+    margin-left: 280px;
+    width: calc(100% - 308px);
+  }
+  .viewSelector{
+    margin-left: 65px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+  }
+#sessionDetailsForm .modal-content{
+  padding: 20px;
+  padding-top: 0px;
+  font-size: 14px;
+  color: #000;
+}
+.fc-event-content{
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.fc-event-title{
+  top: 20%;
+  text-align: center;
+  position: relative;
+
+}
+.sessionDetailsBody{
+  height: 150px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.contentHeading{font-weight: bold;padding-top: 10px;padding-left: 10px;border-bottom:1px solid #e3e3e3; }
+.sessionDetailsBody .text-sm-left{
+  text-align: left !important;
+  padding-top: 10px;
+  min-height: 30px;
+  padding-left: 15px;
+}
+.sessionDetailsBody .col{padding: 0px !important;}
+.teacherPlaceHolder{font-size: 12px;color: grey;font-weight: bold;}
+.teacherName{font-size: 12px;color:#000;font-weight: bold;}
+
+
