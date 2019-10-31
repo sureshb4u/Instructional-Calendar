@@ -1,0 +1,160 @@
+<div class="calendarWrapper" [@maxi]="expansionFlag">
+    
+  <div class="btn-group viewSelector">
+      <!-- <label class="btn btn-primary waves-light" [(ngModel)]="view" mdbRadio="month" mdbWavesEffect>
+         Month
+      </label> -->
+      <div class="centerDropdown">
+          <div class="w250">
+                <ngx-select-dropdown [config]="dropDownConfig" [options]="centers" class="centerDropdown"
+                [(ngModel)]="selectedCenter" [multiple]="false" (change)="emitFilterData()" #centerDropdown (open)="clearSearch(centerDropdown)"></ngx-select-dropdown>
+          </div>
+        <!-- <div class="btn-group" dropdown>
+            <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbWavesEffect [mdbTooltip]="selectedCenter.hub_centername" placement="bottom">
+                {{selectedCenter.hub_centername}}
+            </button>
+        
+            <div class="dropdown-menu dropdown-primary">
+                <a class="dropdown-item"  *ngFor="let center of centers" (click)="emitFilterData(center)" >{{center.hub_centername}}</a>
+            </div>
+        </div> -->
+      </div>
+      <div class="ml20">
+        <label class="btn btn-primary waves-light" [(ngModel)]="view" mdbRadio="week" mdbWavesEffect (click)="refreshData(true)">
+            Week
+        </label>
+        <label class="btn btn-primary waves-light" [(ngModel)]="view" mdbRadio="day" mdbWavesEffect (click)="refreshData(false)">
+            Day
+        </label>
+      </div>
+      <div class="ml20" >
+         <label class="btn btn-primary waves-light" [(ngModel)]="delivery.PI" (click)="filterResourceByDelivery($event)" mdbCheckbox mdbWavesEffect>
+            PI
+         </label>
+         <label class="btn btn-primary waves-light" [(ngModel)]="delivery.GRP" (click)="filterResourceByDelivery($event)" mdbCheckbox  mdbWavesEffect>
+             GRP
+         </label>
+      </div>
+      <i class="fas fa-sync-alt p-2" id="reload" (click)="reloadCalendarData()"></i>
+  </div>
+  <ng-template #customEventTemplate let-event = "event" >
+        <div class="fc-event-content">
+            <div class="fc-event-title">
+                <div class="ssplace" *ngIf="event.sessionList.length && event.teacherSchedule.length">S:T = {{event.studentSessions.length}} : {{event.teacherSchedule.length}}</div>
+                <div class="ssplace" *ngIf="(!event.sessionList.length || !event.teacherSchedule.length)">S:T = NA</div>
+                <div class="ssplace">Seats = {{event.sessionList.length + event.SOF.length}} / {{event.resourceCapacity}}</div>
+                <div class="ssplace">Teachers = {{event.teacherSchedule.length}} / {{event.teacherAvailability.length}}</div>
+            </div>  
+        </div>
+  </ng-template>
+    <div [ngSwitch]="view" class="calendarViewContainer">
+        <app-custom-calendar-dayview *ngSwitchCase="'day'" #customDayView >
+        </app-custom-calendar-dayview>
+        <mwl-calendar-month-view 
+            *ngSwitchCase="'month'"
+            [viewDate]="viewDate"
+            [events]="events"
+            [activeDayIsOpen]="true"
+            [refresh]="refresh"
+            (eventTimesChanged)="eventTimesChanged($event)">
+        </mwl-calendar-month-view>
+        <mwl-calendar-week-view
+            *ngSwitchCase="'week'"
+            [viewDate]="viewDate"
+            [events]="events"
+            [refresh]="refresh"
+            [enableHours]="true"
+            [dayStartHour]="weekviewConfig.startHour"
+            [dayEndHour]="weekviewConfig.endHour"
+            [hourSegments]="weekviewConfig.segments"
+            [hourSegmentHeight]="40"
+            [eventTitleTemplate] = "customEventTemplate"
+            (eventClicked)="eventClicked($event)"
+            (eventTimesChanged)="eventTimesChanged($event)">
+        </mwl-calendar-week-view>
+    </div>
+</div>
+
+<div mdbModal #prompt="mdb-modal" class="modal fade top " id="frameModalTop" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-notify cascading-modal modal-danger" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <p class="heading lead"></p>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="prompt.hide()">
+            <span aria-hidden="true" class="white-text">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center">
+            <i class="fa fa-exclamation-triangle fa-4x mb-3 animated rotateIn"></i>
+            <p>{{dialogBodyText}}</p>
+          </div>
+        </div>
+  
+        <div class="modal-footer justify-content-center">
+          <a type="button" mdbBtn color="danger" outline="true" class="waves-effect" mdbWavesEffect (click)="prompt.hide()">Ok</a>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+
+<!-- Modal -->
+<div mdbModal #sessionDetails="mdb-modal" class="modal fade" id="sessionDetailsForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog cascading-modal" role="document">
+            <!--Content-->
+            <div class="modal-content">
+    
+                <!--Header-->
+                <div class="modal-header light-blue darken-3 white-text">
+                    <h4 class="title">{{eventDetails.start | date : "EEEE h:mm aaa"}}</h4>
+                    <button type="button" class="close waves-effect waves-light" data-dismiss="modal" aria-label="Close" (click)="sessionDetails.hide()">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <!--Body-->
+                <div class="sessionDetailsBody container">
+                    <div class="row">
+                        <div class="col" *ngIf="eventDetails.sessionList && eventDetails.sessionList.length">
+                            <div class="contentHeading">Students in Session</div>
+                            <div *ngFor="let students of eventDetails.sessionList" class="text-sm-left">
+                                <div> 
+                                    <div *ngIf="students.teacher" class="teacherName">
+                                        {{students.teacher.name}}
+                                    </div>
+                                    <div *ngIf="!students.teacher" class="teacherPlaceHolder">
+                                         Teacher Name
+                                    </div>
+                                    <div style="padding-left: 5px;" *ngFor="let student of students.students">
+                                           <span  [mdbTooltip]="student.serviceValue" placement="right"> {{student.name}}<span *ngIf="student.grade">, {{student.grade}}</span></span> 
+                                           <i *ngIf="student.serviceValue" style="padding-left:5px;" [ngStyle]="student.iconStyle" class="fa fa-book" ></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col" *ngIf="eventDetails.SOF && eventDetails.SOF.length">
+                            <div class="contentHeading">Studnet Overflow</div>
+                            <div *ngFor="let student of eventDetails.SOF" class="text-sm-left">
+                                <div *ngIf="!student.resourceId" style="padding-left: 5px;">
+                                        <span> {{student.name}}<span *ngIf="student.grade">, {{student.grade}}</span></span>
+                                        <span *ngIf="student.serviceValue" [mdbTooltip]="student.serviceValue" placement="right"><i style="padding-left:5px;" [ngStyle]="student.iconStyle" class="fa fa-book"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="eventDetails.teacherAvailability && eventDetails.teacherAvailability.length" class="col">
+                            <div class="contentHeading">Teacher Available</div>
+                            <div *ngFor="let teacher of eventDetails.teacherAvailability" class="text-sm-left">
+                                {{teacher.name}}
+                            </div>
+                        </div>
+                   </div>
+                </div>
+
+            </div>
+        </div>
+            <!--/.Content-->
+</div>
+
+
+

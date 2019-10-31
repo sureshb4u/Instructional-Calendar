@@ -1,0 +1,14 @@
+<div  [@fadeOut]="fadeProp">
+  <div  class="selectedDate"> {{selectedDate.formatted}}</div>
+  <div  class="pickerContainer">
+        <div class="pickerContainer"> 
+                <my-date-picker name="mydate" [options]="myDatePickerOptions"
+                [(ngModel)]="selectedDate" (dateChanged)="onDateChanged($event)"></my-date-picker>
+            </div>
+  </div>
+  <div class="iconContainer">
+      <div>
+        
+      </div>
+  </div>
+</div>

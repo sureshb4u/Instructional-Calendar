@@ -1,0 +1,167 @@
+
+.studentList{padding: 4px;color: #000;word-break: break-word;line-height: 2;
+  white-space: pre-line;}
+.teacherContainer{text-align: center;color: #000;font-weight: bold;z-index: 1;min-height: 20px;}
+.studentContainer{z-index: 1;min-height: 20px;}
+.placeHolderText{color: #9f9f9f;}
+.additionalPanes{ float: right;  position: fixed; z-index: 10; background-color: #fff; right: 2px;  border: 1px solid #ccc;  width: 55px;  height: 100%;  text-align: center;}
+.additionalPanes div{    
+  text-align: center;
+  cursor: pointer;
+  color: #fff;
+  font-weight: bold;
+  height: 40px;
+  font-size: 12px;
+  border-radius: 50px;
+  box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+  margin: 8px;
+  padding-top: 12px;
+  vertical-align: baseline;
+  background-color: #4285f4;
+  width: 40px;
+}
+.rightPane{
+  right: 0px;
+  position: fixed;
+  float: right;
+  width: 250px;
+  background-color: #fff;
+  top: 75px;
+  border: 1px solid #ccc;
+  height: 100%;
+  z-index: 10;
+}
+.staffTimingContainer{
+  padding: 8px;
+  color: #000;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc; 
+}
+.rightPaneHeader{
+  text-align: center;
+  color: #000;
+  font-size: 16px;
+  height: 40px;
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+  font-weight:bold;  
+}
+.rightPaneHeader span{
+  text-align: right;
+  float: right;
+  font-size: 14px;
+  cursor: pointer;
+}
+.conflictContainer{
+  float: right;
+  color: #cc0000;
+}
+#makeupNfloat .modal-content{
+  max-width: 360px;
+}
+#makeupNfloat .modal-header, .modal-header{
+  height: 60px;
+  padding: 12px !important;
+}
+#makeupNfloat .modal-content .modal-body{
+  font-size: 14px;
+  height: 250px;
+}
+.makeupItem{
+  padding: 6px;
+  cursor: pointer;
+}
+.makeupListBody{
+  overflow-y: auto;
+  height: 150px;
+}
+.fas.fa-thumbtack{
+  font-size: 10px;
+  color: #106dac;
+}
+.fas.fa-lock{
+  color:#00c4ff;
+  font-size: 10px;
+}
+#makeupNfloat .modal-dialog.cascading-modal .modal-header .close, .modal-header .close{
+  padding: 12px;
+  margin: 0px;
+  top: -25px;
+  right: 20px;
+}
+#makeupNfloat .md-form{
+  margin: 16px;
+}
+#makeupNfloat .md-form input{width: 100%}
+.makeupItem:hover{background-color: #4285f4;color: #fff;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);}
+.typeIndicator{
+  font-size: 10px;
+  vertical-align: top;
+  top: -8px;
+  padding: 4px;
+  padding-top: 0px !important;
+  position: relative;
+}
+#reschedulePopup .modal-dialog{
+  width: 430px;
+}
+.label{
+  font-size: 14px;
+  font-weight: bold;
+  color: #000;
+  padding: 8px;
+  display: inline-block;
+  width: 75px;
+}
+#reschedulePopup .pickerContainer{
+  display: inline-block;
+  width: 200px;
+}
+.inputField{display: inline;}
+#reschedulePopup .dropdown-toggle{
+  width: 100px;
+  padding: 8px;
+  margin: 0px;
+}
+#reschedulePopup .dropdown-menu{
+  width: 100px;
+  min-width: 100px;
+  top: 20px;
+  max-height: 150px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#reschedulePopup .dropdown-item{
+  padding: 8px !important;
+}
+.inline{display: inline;}
+.mt-12{margin-top: 12px;}
+.disabled {cursor: not-allowed};
+.disabled::after{display: none;}
+.error{color: red;text-align: center;padding: 8px;top: 12px;position: relative;}
+.conflictMsg{min-width: 150px;}
+.promptMsg{font-size: 14px;color: #000;}
+.countDiv{
+  width: 20px;
+  height: 20px;
+  top: 22px;
+  margin: 0px;
+  color: #fff;
+  padding: 2px;
+  box-shadow: 2px 3px 5px 1px rgba(0, 0, 0, 0.16), 1px 3px 9px 2px rgba(0, 0, 0, 0.12);
+  display: inline-block;
+  left: 14px;
+  position: relative;
+  border-radius: 50px;
+  background-color: #CC0000;
+  font-size: 11px;
+  font-weight: bold;
+}
+.dot{
+  border-radius: 50px;
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}

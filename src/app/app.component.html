@@ -1,0 +1,11 @@
+<ngx-ui-loader ></ngx-ui-loader>
+<div class="appContainer">
+  <div class="filterWrapper" [@expandables]="expandFlag">
+    <mdb-icon [@rotation]="rotationFlag" fas icon="angle-double-left" (click)="toggleExpansion()" class="fr"></mdb-icon>      
+    <app-calendar-filter #filterContainer (filterData)="loadSessions($event)" ></app-calendar-filter>
+  </div>
+  <div >
+    <app-custom-calendar #calendarContainer id="calendarContainer"></app-custom-calendar>
+  </div>
+</div>
+    

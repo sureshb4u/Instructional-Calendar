@@ -1,0 +1,500 @@
+<!-- CONTEXT MENU TEMPLATES -->
+
+<context-menu #teacherPlaceHolder >
+  <ng-template contextMenuItem (execute)="getFloatTeacher($event.item)" [enabled]="!accountClosureFlag">
+    Float
+  </ng-template>
+</context-menu>
+
+<!-- DAY EVENT TEMPLATE -->
+
+<ng-template #dayEventTemplate let-event = "event" >
+  <div class="fc-event-content" >
+    <div class="conflictContainer">
+      <i *ngIf="event.conflicts" [mdbTooltip]="event.conflictMsg" placement="top" class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="conflictContainer float-left">
+        <i *ngIf="event.is1to1" [mdbTooltip]="ONETOONE_INFO" placement="top" class="fas fa-lock"></i>
+      </div>
+    <div class="teacherContainer">
+         
+      <div [contextMenu]="staffMenu" [contextMenuSubject]="{event:event,teacher:event.teacher}" *ngIf="event.teacher" >
+          <context-menu #staffMenu>
+              <ng-template contextMenuItem (execute)="pinTeacher($event.item)" 
+                [visible]="!event.teacher.pinId && !(event.teacher.scheduleType == config.FLOAT_TEACHER_TYPE)" [enabled]="!accountClosureFlag">
+                Pin
+              </ng-template>
+              <ng-template contextMenuItem [visible]="event.teacher.pinId && !(event.teacher.scheduleType == config.FLOAT_TEACHER_TYPE)" 
+              (execute)="unpinTeacher($event.item)" [enabled]="!accountClosureFlag">
+                Unpin
+              </ng-template>
+              <ng-template contextMenuItem (execute)="removeStaff($event.item,$event.item.teacher.resourceId)" [enabled]="!accountClosureFlag">
+                Remove
+              </ng-template>
+          </context-menu>
+          <i *ngIf="event.teacher.pinId" class="fas fa-thumbtack"></i>
+          <span class="draggableEl p4" mwlDraggable #teacherEl [dropData]="{event:event,teacher:event.teacher}" (dragStart)="scrollTimings($event,teacherEl)" >
+              <span>{{event.teacher.name}}</span> 
+          </span>
+      </div>
+      <span *ngIf="!event.teacher" class="placeHolderText" [contextMenu]="teacherPlaceHolder" [contextMenuSubject]="event">Add Teacher</span>
+    </div>
+    <div class="studentContainer">
+      <div  *ngIf="event.students">
+          <div *ngFor="let student of event.students">
+              <context-menu #studentMenu>
+                <ng-template contextMenuItem (execute)="pinStudent($event.item)" 
+                [visible]="!student.pinId && student.sessiontype != config.MAKEUP_TYPE && student.sessiontype != config.FLOAT_TYPE" 
+                [enabled]="!accountClosureFlag">
+                  Pin
+                </ng-template>
+                <ng-template contextMenuItem [visible]="student.pinId  && student.sessiontype != config.MAKEUP_TYPE && student.sessiontype != config.FLOAT_TYPE" 
+                (execute)="unpinStudent($event.item)" [enabled]="!accountClosureFlag">
+                  Unpin
+                </ng-template>
+                <ng-template contextMenuItem (execute)="openReschedulePopup($event.item)" 
+                  [enabled]="!accountClosureFlag" [visible]="student.deliveryTypeCode == GF_CODE">
+                    Reschedule
+                </ng-template>
+                <ng-template contextMenuItem [visible]="student.sessiontype != config.MAKEUP_TYPE" (execute)="omitStudentSession($event.item,config.OMIT_STATUS)" [enabled]="!accountClosureFlag">
+                  Omit
+                </ng-template>
+                <ng-template contextMenuItem (execute)="excuseStudent($event.item)" [enabled]="!accountClosureFlag" [visible]="student.deliveryTypeCode != GF_CODE">
+                  Excuse
+                </ng-template>
+                <ng-template contextMenuItem (execute)="moveToSof($event.item)" [enabled]="!accountClosureFlag">
+                  Move to SOF
+                </ng-template>
+                <ng-template contextMenuItem (execute)="omitStudentSession($event.item,'attended')" 
+                  [enabled]="!accountClosureFlag && !futureDate" [visible] = "!student.isAttended">
+                  Attended
+                </ng-template>
+                <ng-template contextMenuItem (execute)="omitStudentSession($event.item,config.UNEXCUSED_STUDENT)" [enabled]="!accountClosureFlag && !futureDate">
+                  Un-excuse
+                </ng-template>
+              </context-menu>
+            <div *ngIf="student.deliveryTypeCode != GI_CODE" [contextMenu]="studentMenu" [contextMenuSubject]="{event:event,student:student}" 
+              class="fc-event-title  studentList" >
+              <i *ngIf="student.pinId" class="fas fa-thumbtack"></i>  
+              <span mwlDraggable (dblclick)="openEnrollment(student.enrollmentId)"
+              #dragableTitle [dropData]="{event: event,student:student}"
+              (dragStart)="scrollTimings($event, dragableTitle)" class="draggableEl">
+                  <span *ngIf="student.serviceValue" [mdbTooltip]="student.serviceValue" placement="right"><span style="padding-left:5px;" [ngStyle]="student.iconStyle" class="dot"></span></span>              
+                  <span> {{student.name}}<span *ngIf="student.grade">, {{student.grade}}</span></span>
+                  <span *ngIf="student.sessiontype == config.FLOAT_TYPE" class="typeIndicator"> <mdb-badge color="cyan">F</mdb-badge></span>
+                  <span *ngIf="student.sessiontype == config.MAKEUP_TYPE" class="typeIndicator"> <mdb-badge color="cyan">MU</mdb-badge></span>
+              </span>
+            </div>
+          </div>
+          <div *ngFor="let student of event.students" >
+              <context-menu #studentMenu>
+                  <ng-template contextMenuItem (execute)="pinStudent($event.item)" 
+                  [visible]="!student.pinId && student.sessiontype != config.MAKEUP_TYPE && student.sessiontype != config.FLOAT_TYPE" 
+                  [enabled]="!accountClosureFlag">
+                    Pin
+                  </ng-template>
+                  <ng-template contextMenuItem [visible]="student.pinId  && student.sessiontype != config.MAKEUP_TYPE && student.sessiontype != config.FLOAT_TYPE" 
+                  (execute)="unpinStudent($event.item)" [enabled]="!accountClosureFlag">
+                    Unpin
+                  </ng-template>
+                  <ng-template contextMenuItem [visible]="student.sessiontype != config.MAKEUP_TYPE" (execute)="omitStudentSession($event.item,config.OMIT_STATUS)" [enabled]="!accountClosureFlag">
+                    Omit
+                  </ng-template>
+                  <ng-template contextMenuItem (execute)="omitStudentSession($event.item,'attended')" 
+                    [enabled]="!accountClosureFlag && !futureDate" [visible] = "!student.isAttended">
+                    Attended
+                  </ng-template>
+                  <ng-template contextMenuItem (execute)="omitStudentSession($event.item,config.UNEXCUSED_STUDENT)" [enabled]="!accountClosureFlag && !futureDate">
+                    Un-excuse
+                  </ng-template>
+                </context-menu>
+            <div *ngIf="student.deliveryTypeCode == GI_CODE" [contextMenu]="studentMenu" (dblclick)="openEnrollment(student.enrollmentId)" [contextMenuSubject]="{event:event,student:student}" class="fc-event-title studentList">
+                <i *ngIf="student.pinId" class="fas fa-thumbtack"></i> 
+                <span> {{student.name}}<span *ngIf="student.grade">, {{student.grade}}</span></span>
+                <span style="padding-left:5px;" [ngStyle]="student.iconStyle" class="dot"></span><span *ngIf="student.serviceValue" [mdbTooltip]="student.serviceValue" placement="right"></span>
+            </div>
+          </div>
+      </div>
+      <context-menu #studentPlaceHolder >
+          <ng-template contextMenuItem (execute)="makeupAndFloat($event.item , true)" [enabled]="!accountClosureFlag" [visible]="event.color.deliveryTypeCode != GF_CODE">
+            Makeup
+          </ng-template>
+          <ng-template contextMenuItem (execute)="makeupAndFloat($event.item, false)" [enabled]="!accountClosureFlag">
+            Float
+          </ng-template>
+        </context-menu>
+      <div *ngIf="!event.maxCapacity && event.color.deliveryTypeCode != GI_CODE" [contextMenu]="studentPlaceHolder" [contextMenuSubject]="event" class="placeHolderText">Student Name</div>
+      <div *ngIf="!event.maxCapacity && event.color.deliveryTypeCode == GI_CODE" class="placeHolderText">Student Name</div>
+    </div>  
+  </div>
+</ng-template>
+
+<!-- RIGHT PANE -->
+
+<div class="additionalPanes">
+    <span class="countDiv" *ngIf="sofCount">{{sofCount}}</span>         
+    <div (click)="pane = 'SOF';toggleRightPane()">  
+      SOF
+    </div>
+    <div (click)="pane = 'TA';toggleRightPane()">
+        TA
+    </div>
+    <div (click)="pane = 'SA';toggleRightPane()">
+        SA
+    </div>
+</div>
+
+<!-- CALENDAR DAY VIEW -->
+
+<mwl-calendar-day-view [viewDate]="viewDate" [refresh]="refresh" (document:scroll)="scrollHeader()"
+  [hourSegments]="dayViewConfg.segments" 
+  [dayStartHour]="dayViewConfg.startHour"
+  [dayEndHour]="dayViewConfg.endHour"
+  [hourSegmentHeight]="40"
+  [resourceView]="dayViewConfg.resourceView"
+  [resources]="resources"
+  [resourceWidth]="230"
+  [class.closure]="!businessClosureFlag"
+  [eventTitleTemplate]="dayEventTemplate"
+  (eventTimesChanged)="eventTimesChanged($event);">
+</mwl-calendar-day-view>
+
+<!-- RIGHT PANE CONTENT -->
+
+<div [@visibilityChanged]="visibility" class="rightPane" >
+  <div *ngIf="pane == 'SOF'">
+      <div class="rightPaneHeader">
+        Students Overflow <span (click)="toggleRightPane()">X</span>
+      </div>
+    <div *ngFor="let student of availableStudentList">
+        <div class="staffTimingContainer " 
+          *ngIf="((delivery.PI && student.deliveryTypeCode == PI_CODE) || (delivery.GRP && student.deliveryTypeCode != PI_CODE)) && !accountClosureFlag"
+          [style.background]="config.colorObj[student.deliveryTypeCodeVal].secondary"> 
+            <div class="draggableEl d-inline-block" mwlDraggable [dropData]="{event:{},sofStudent:student}"><span>{{student.name}}</span>
+              <span>: {{student.start | date:"h:mm a"}} - {{student.end | date:"h:mm a"}} </span>
+            </div> 
+        </div>
+        <div class="staffTimingContainer" [style.background]="config.colorObj[student.deliveryTypeCodeVal].secondary"
+          *ngIf="((delivery.PI && student.deliveryTypeCode == PI_CODE) || (delivery.GRP && student.deliveryTypeCode != PI_CODE)) && accountClosureFlag"> 
+          {{student.name}} : {{student.start | date:"h:mm a"}} - {{student.end | date:"h:mm a"}} 
+        </div>
+    </div>
+  </div>
+  <div *ngIf="pane == 'TA'">
+    <div class="rightPaneHeader">
+      Teachers Available <span (click)="toggleRightPane()">X</span>
+    </div>
+    <div *ngFor="let teacher of availableTeacherList">
+        <div *ngIf="!accountClosureFlag" class="staffTimingContainer">
+          <div class="draggableEl d-inline-block" mwlDraggable [dropData]="{event:{},teacherAvailable:teacher}"><span>{{teacher.name}} </span> 
+            <span>({{teacher.start}} - {{teacher.end}})</span>
+          </div> 
+        </div>
+        <div *ngIf="accountClosureFlag" class="staffTimingContainer">
+          {{teacher.name}} ({{teacher.start}} - {{teacher.end}})
+        </div>
+    </div>
+  </div>
+  <div *ngIf="pane == 'SA'">
+    <div class="rightPaneHeader">
+      SA Pane <span (click)="toggleRightPane()">X</span>
+    </div>
+    <div *ngFor="let student of saList">
+        <div *ngIf="student.sessionStatus == 4 && !accountClosureFlag && ((delivery.PI && student.deliveryTypeCode == PI_CODE) || (delivery.GRP && student.deliveryTypeCode != PI_CODE))" 
+          class="staffTimingContainer" [style.background]="config.colorObj[student.deliveryTypeCodeVal].secondary">
+          <div class="draggableEl d-inline-block" mwlDraggable  [dropData]="{event:{},saStudent:student}"><span>{{student.name}}, </span>
+            {{student.grade}} ({{student.sessionStatusText}}) 
+          {{student.start | date:"h:mm a"}} - {{student.end | date:"h:mm a"}}
+        </div>
+        </div>
+        <div *ngIf="(student.sessionStatus != 4 || accountClosureFlag) && ((delivery.PI && student.deliveryTypeCode == PI_CODE) || (delivery.GRP && student.deliveryTypeCode != PI_CODE))" 
+        class="staffTimingContainer" [style.background]="config.colorObj[student.deliveryTypeCodeVal].secondary">
+          {{student.name}}, {{student.grade}} ({{student.sessionStatusText}}) {{student.start | date:"h:mm a"}} - {{student.end | date:"h:mm a"}}
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROMPT DIALOG TEMPLATE -->
+
+<div mdbModal #prompt="mdb-modal" class="modal fade top " id="commonPrompt" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-notify cascading-modal modal-danger" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead"></p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="prompt.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <i class="fa fa-user-times fa-4x mb-3 animated bounceIn"></i>
+          <div class="promptMsg" [innerHtml]="dialogBodyText"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <a type="button" mdbBtn color="danger" outline="true" class="btn btn-outline-danger waves-effect" mdbWavesEffect (click)="prompt.hide()">Ok</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION DIALOG TEMPLATE -->
+
+<div mdbModal #studentConfirmation="mdb-modal" class="modal fade top " id="studentConfirmation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)">
+    <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+      <div class="modal-content">
+        <div class="modal-header">
+          <p class="heading lead">Are you sure?</p>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="studentConfirmation.hide()">
+            <span aria-hidden="true" class="white-text">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center">
+            <i class="fa fa-exclamation fa-4x mb-3 primary animated flash"></i>
+            <p>{{dialogBodyText}}</p>
+          </div>
+        </div>
+  
+        <div class="modal-footer justify-content-center">
+          <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="ngxService.start();studentValidConfirmation()">Yes</button>
+          <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+          mdbWavesEffect (click)="studentConfirmation.hide()">No</button>   
+      </div>
+      </div>
+    </div>
+</div>
+
+<!-- REFRESH CONFIRMAION TEMPLATE -->
+
+<div mdbModal #refreshConfirmation="mdb-modal" class="modal fade top " id="refreshConfirmation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-notify cascading-modal modal-info" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <p class="heading lead">Refresh Confirmation</p>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="refreshConfirmation.hide()">
+            <span aria-hidden="true" class="white-text">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center">
+            <i class="fa fa-sync-alt fa-4x mb-3 primary animated rotate-in"></i>
+            <p>{{dialogBodyText}}</p>
+          </div>
+        </div>
+  
+        <div class="modal-footer justify-content-center">
+          <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="ngxService.start();reloadCalendar()">Yes</button>
+          <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+          mdbWavesEffect (click)="refreshConfirmation.hide()">No</button>   
+      </div>
+      </div>
+    </div>
+</div>
+
+<div mdbModal #teacherConfirmation="mdb-modal" class="modal fade top " id="teacherConfirmation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)">
+  <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead">Are you sure?</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="teacherConfirmation.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <i class="fa fa-exclamation fa-4x mb-3 primary animated flash"></i>
+          <p>{{dialogBodyText}}</p>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="ngxService.start();teacherValidConfirmation()">Yes</button>
+        <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+        mdbWavesEffect (click)="teacherConfirmation.hide()">No</button>   
+    </div>
+    </div>
+  </div>
+</div>
+
+<div mdbModal #makeupConfirmation="mdb-modal" class="modal fade top " id="makeupConfirmation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)">
+  <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead">Are you sure?</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="makeupConfirmation.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <i class="fa fa-exclamation fa-4x mb-3 primary animated flash"></i>
+          <p>{{dialogBodyText}}</p>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="ngxService.start();makeupValidConfirmation()">Yes</button>
+        <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+        mdbWavesEffect (click)="makeupConfirmation.hide()">No</button>   
+    </div>
+    </div>
+  </div>
+</div>
+
+
+<div mdbModal #makeupNfloat="mdb-modal" class="modal fade top " id="makeupNfloat" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)" (open)="searchText=''">
+  <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead" *ngIf="makeupFlag">Add Makeup</p>
+        <p class="heading lead" *ngIf="!makeupFlag">Add Float</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="makeupNfloat.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="md-form text-center">
+              <input type="text" [(ngModel)]="searchText" placeholder="Search">
+            </div>
+        <div class="text-left">
+          <div class="makeupListBody">
+              <div *ngFor="let student of makeupNfloatList | filter:searchText">
+                  <div id="student.enrollmentId" (click)="ngxService.start();addMakeupOrFloat(student)" class="makeupItem"> {{student.fullName}}, {{student.grade}} </div>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+        mdbWavesEffect (click)="makeupNfloat.hide()">close</button>   
+    </div>
+    </div>
+  </div>
+</div>
+
+<div mdbModal #floatTeacher="mdb-modal" class="modal fade top " id="makeupNfloat" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)" (open)="searchText=''">
+  <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead" >Add Float</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="floatTeacher.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="md-form text-center">
+              <input type="search" [(ngModel)]="searchText" placeholder="Search">
+            </div>
+        <div class="text-left">
+          <div class="makeupListBody">
+              <div *ngFor="let teacher of floatConvertedTeacherList | filter:searchText">
+                  <div id="teacher.id" (click)="ngxService.start();addFloatTeacher(teacher)" class="makeupItem"> {{teacher.name}} </div>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+        mdbWavesEffect (click)="floatTeacher.hide()">close</button>   
+     </div>
+    </div>
+  </div>
+</div>
+
+<div mdbModal #teacherFloatConfirmation="mdb-modal" class="modal fade top " id="teacherFloatConfirmation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)">
+  <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead">Are you sure?</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="teacherFloatConfirmation.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <i class="fa fa-exclamation fa-4x mb-3 primary animated flash"></i>
+          <p>{{dialogBodyText}}</p>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="ngxService.start();teacherFloatValidConfirmation()">Yes</button>
+        <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+        mdbWavesEffect (click)="teacherFloatConfirmation.hide()">No</button>   
+    </div>
+    </div>
+  </div>
+</div>
+
+<div mdbModal #reschedulePopup="mdb-modal" class="modal fade top " id="reschedulePopup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)">
+  <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead">Reschedule</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="reschedulePopup.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div>
+              <div>
+                <span class="label">Name </span><span>{{xrmConverter.getTempCache('rescheduleStudent')}}</span> 
+              </div> 
+              <div>
+                  <span class="label">Date </span>
+                  <div class="pickerContainer inputField" id="reschedulePicker" *ngIf="xrmConverter.getTempCache('rescheduleStudent')"> 
+                          <my-date-picker name="reschedulePicker" [options]="rescheduleOptions"
+                          [(ngModel)]="rescheduleDate" (dateChanged)="populateTimings($event)" #reschedulePicker></my-date-picker>
+                  </div>
+              </div>
+              <div *ngIf="rescheduleTimeList && rescheduleTimeList.length" class="mt-12">
+                  <div class="inline">
+                      <span class="label">Start </span>
+                      <div class="dropdown inputField" mdbDropdown>
+                        <button mdbDropdownToggle mdbBtn color="primary" class="dropdown-toggle waves-light" type="button"
+                          mdbWavesEffect #rescheduleStartTime>
+                            {{rescheduleTimeList[0]}}
+                        </button>
+                        <div class="dropdown-menu dropdown-primary">
+                          <a class="dropdown-item" *ngFor="let opt of rescheduleTimeList" (click)="populateEndTime(opt)">
+                              {{opt}}
+                          </a>
+                        </div>
+                      </div>
+                  </div>
+                  <div class="inline"> 
+                      <span class="label">End </span>
+                      <div class="inputField">
+                          <button mdbDropdownToggle mdbBtn color="primary" class="dropdown-toggle waves-light disabled" type="button"
+                            mdbWavesEffect #rescheduleEndTime >
+                              {{rescheduleTimeList[0]}}
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              <div *ngIf="noTimings">
+                  <div class="error"> {{NO_TIMING}} </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="rescheduleStudent()">Reschedule</button>
+        <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+        mdbWavesEffect (click)="reschedulePopup.hide()">Close</button>   
+    </div>
+    </div>
+  </div>
+</div>
