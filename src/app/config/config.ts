@@ -31,6 +31,7 @@ export class AppConstants {
   public OMIT_STATUS = 5;
   public MAKEUP_STATUS = 6;
   public INVALID_STATUS = 7;
+  public REMOVED_BY_SYSTEM = 8;
   public SIMPLICITY_STATUS = 1;
 
   public ACTIVE_STATE = 0;
@@ -200,3 +201,6 @@ export const OMITTED_STUDENT = "Omitted";
 export const UNEXCUSED_STUDENT = "Unexcused";
 export const EXCUSED_STUDENT = "Excused";
 export const NO_TIMING = "No Instructional hours found for the given date."; 
+export const ATTENDANCE_ERROR = "Error while updating the Attendece. Please refresh to see the updated records";
+export const MAKEUP_ERROR_MSG_1 = "The make-up for this excused session is scheduled on ";
+export const MAKEUP_ERROR_MSG_2 = ". This session cannot be removed from Excused status.";
