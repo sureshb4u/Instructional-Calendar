@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef,ViewChild,ElementRef,OnInit, EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs';
-import { CalendarEvent, CalendarEventTimesChangedEvent,Resource,CalendarDayViewComponent,CalendarDateFormatter, DateFormatterParams} from '../angular-calendar';
+import { CalendarEvent, CalendarEventTimesChangedEvent,CalendarDayViewComponent,CalendarDateFormatter, DateFormatterParams} from '../angular-calendar';
 import interact from 'interactjs';
 import * as moment from 'moment';
 import * as serverData from '../interface/calendar-view';
@@ -21,12 +21,18 @@ import { ContextMenuComponent } from 'ngx-contextmenu';
   animations: [
     trigger('visibilityChanged',
         [
-            state('visible', style({ right: '0' })),
-            state('hidden', style({ right: '-400px'})),
-            state('void', style({ right: '-400px' })),
+            state('visible', style({ opacity: 1,zIndex:12 })),
+            state('hidden', style({ opacity: 0,zIndex:1})),
+            state('void', style({ opacity: 0,zIndex:1 })),
             transition('visible <=> hidden', animate('0.5s ease')),
             transition('void => *',animate('0.5s ease'))
-        ])
+        ]),    
+        trigger('fade',[
+            state('default', style({ opacity: '1' })),
+            state('faded', style({ opacity: '0' })),
+            transition('faded => default', animate('400ms ease-out')),
+            transition('default => faded', animate('400ms ease-in'))
+          ])
 ],
 providers: [
     {
@@ -41,6 +47,7 @@ export class CustomCalendarDayviewComponent implements OnInit {
   @ViewChild("prompt") prompt: any;
   @ViewChild("studentConfirmation") studentConfirmation:any;
   @ViewChild("refreshConfirmation") refreshConfirmation:any;
+  @ViewChild("excuseConfirmation") excuseConfirmation:any;
   @ViewChild("teacherConfirmation") teacherConfirmation:any;
   @ViewChild("makeupConfirmation") makeupConfirmation:any;
   @ViewChild("teacherFloatConfirmation") teacherFloatConfirmation:any;
@@ -56,6 +63,7 @@ export class CustomCalendarDayviewComponent implements OnInit {
   clientX;
   clientY;
   initFlag = false;
+  disableAttendance = false;
   dayViewConfg:any;
   eventForDayview ;
   mouseMovement:any;
@@ -177,6 +185,7 @@ export class CustomCalendarDayviewComponent implements OnInit {
         }
         self.convertExceptionList(self.data.getStaffException(self.config.getLocation().hub_centerid,self.startDate,self.endDate,parentCenterId));
         self.addStaffSchedule();
+        self.checkAttendance();
         self.formatStaffAvailability();
         self.getStudentAvaialbility();
     }else{
@@ -185,6 +194,13 @@ export class CustomCalendarDayviewComponent implements OnInit {
     self.refresh.next(); 
   }
 
+  checkAttendance = () =>{
+      let buttonEl:any = document.querySelector("#markAllAttendance");
+      buttonEl.disabled = false;
+    if(this.futureDate || !this.businessClosureFlag || this.accountClosureFlag){
+        buttonEl.disabled = true;
+    }
+  }
   ngOnInit(){
     this.ngxService.start();        
     this.dayViewConfg = this.config.getConfig();    
@@ -561,6 +577,11 @@ export class CustomCalendarDayviewComponent implements OnInit {
       }else{
         this.visibility = "visible";
       }
+      var filterEL: any = document.querySelector(".filterWrapper");
+      var calEL: any = document.querySelector(".calendarWrapper");
+      calEL.style.width = (calEL.style.width == 'calc(100% - 340px)' ? ' calc(100% - 80px)': 'calc(100% - 340px)');
+      calEL.style.marginLeft = (calEL.style.marginLeft == '275px' ? '80px': '275px');
+      filterEL.style.width = (filterEL.style.width == '275px' ? '70px' : '275px');
   }
 
   initInteract = ()=>{
@@ -1639,6 +1660,27 @@ export class CustomCalendarDayviewComponent implements OnInit {
         } else if (typeof responseObj == 'object' && responseObj.code) {
             self.dialogBodyText = responseObj.message;
             self.refreshConfirmation.show();
+        }else if (typeof responseObj == 'object' && responseObj.type) {
+            if (responseObj.type == "CNF") {
+                let creationObj:any = {}
+                creationObj.eventObj = eventObj;
+                creationObj.newStart = newStart;
+                creationObj.newEnd = newEnd;
+                creationObj.resourceId = resourceId;
+                creationObj.studentList = studentList;
+                creationObj.updatedEventObj = updatedEventObj;
+                self.xrmConverter.setTempCache("newStudent",rawStudentList[1]);
+                self.xrmConverter.setTempCache("oldStudent",rawStudentList[0]);
+                self.xrmConverter.setTempCache("responseObj",responseObj);
+                self.xrmConverter.setTempCache("createObj",creationObj);
+                self.dialogBodyText = responseObj.message;
+                self.excuseConfirmation.show();
+            } else if (responseObj.type == "ERR" && responseObj.makeupObj) {
+                var dateTime = responseObj.makeupObj["hub_session_date@OData.Community.Display.V1.FormattedValue"] + " " + responseObj.makeupObj["hub_start_time@OData.Community.Display.V1.FormattedValue"];
+                var msg = globals.MAKEUP_ERROR_MSG_1 + dateTime + globals.MAKEUP_ERROR_MSG_2;
+                self.dialogBodyText = msg;
+                self.prompt.show();
+            }
         }
        return responseForCalendar;
     }
@@ -2869,6 +2911,117 @@ export class CustomCalendarDayviewComponent implements OnInit {
             }else{
                 document.querySelector("html").scroll(0,0);
             }
+        }
+    }
+
+    markAllAttended = element =>{
+        var buttonEl = element.target;
+        this.ngxService.start();
+        var currentCalendarDate:any = this.viewDate;
+            currentCalendarDate = moment(currentCalendarDate).format("YYYY-MM-DD");
+            let locationId = this.config.getLocation().hub_centerid;
+            var response = this.data.markAllAttended(locationId, currentCalendarDate);
+            if (response) {
+                this.reloadCalendar();
+                buttonEl.disabled = true;
+            } else {
+                this.dialogBodyText = globals.ATTENDANCE_ERROR;
+                this.prompt.show();
+                this.ngxService.stop();
+            }
+    }
+
+    scheduleExcused = function () {
+        var self = this;
+        let newStudent = self.xrmConverter.getTempCache("newStudent");
+        let oldStudent = self.xrmConverter.getTempCache("oldStudent");
+        let makeupObj =  self.xrmConverter.getTempCache("responseObj");
+        let creationObj = self.xrmConverter.getTempCache("creationObj");
+        var objSession:any = {};
+        objSession['hub_center@odata.bind'] = self.config.getLocation().hub_centerid;
+        objSession['hub_resourceid@odata.bind'] = newStudent["hub_resourceid@odata.bind"];
+        objSession.hub_session_date = newStudent.hub_session_date;
+        if (newStudent != undefined) {
+            objSession['hub_start_time'] = newStudent["hub_start_time"];
+            objSession['hub_end_time'] = newStudent['hub_end_time'];
+            objSession['hub_sessiontype'] = self.config.REGULAR_TYPE;
+            if (newStudent['hub_sessiontype'] != undefined) {
+                objSession['hub_sessiontype'] = newStudent['hub_sessiontype'];
+            }
+            objSession['hub_session_status'] = newStudent['hub_session_status'];
+            if (newStudent['hub_makeup_expiry_date']) {
+                objSession['hub_makeup_expiry_date'] = newStudent['hub_makeup_expiry_date'];
+            }
+            objSession['hub_deliverytype_code'] = newStudent["hub_deliverytype_code"];
+            objSession['@odata.etag'] = newStudent['@odata.etag'];
+            objSession['hub_isattended'] = newStudent['hub_isattended'];
+
+            // get location obj
+            var locationObj = self.config.getlocation();
+            objSession['ownerObj'] = locationObj['ownerObj'];
+
+            if (oldStudent['hub_student_session@odata.bind']) {
+                objSession['hub_student_session@odata.bind'] = oldStudent['hub_student_session@odata.bind'];
+            }
+            if (oldStudent['hub_master_schedule@odata.bind']) {
+                objSession['hub_master_schedule@odata.bind'] = oldStudent['hub_master_schedule@odata.bind'];
+            }
+            if (oldStudent['hub_sourceapplicationid']) {
+                objSession['hub_sourceapplicationid'] = oldStudent['hub_sourceapplicationid'];
+            }
+        }
+        objSession["hub_studentsessionid"] = oldStudent['hub_studentsessionid'];
+        var response = self.data.scheduleExcused(objSession, makeupObj);
+        self.updateExcusedEvent(response,creationObj);
+    }
+
+    updateExcusedEvent = function (response,creationObj) {
+        var self = this;
+        let eventObj = creationObj.eventObj;
+        let studentList = creationObj.studentList;
+        let updatedEventObj = creationObj.updatedEventObj;
+        if (typeof response == "object" && !response.code && response.length) {
+            self.saList.splice(self.saList.indexOf(eventObj[studentList]),1);
+            updatedEventObj.etagId = response[0]['@odata.etag'];
+            if (response[0]['hub_student_session@odata.bind']) {
+                updatedEventObj['studentSession'] = response[0]['hub_student_session@odata.bind'];
+            }
+            if (response[0]['hub_master_schedule@odata.bind']) {
+                updatedEventObj['masterScheduleId'] = response[0]['hub_master_schedule@odata.bind'];
+            }
+            if (response[0]['hub_sourceapplicationid']) {
+                updatedEventObj['sourceAppId'] = response[0]['hub_sourceapplicationid'];
+            }
+            updatedEventObj.sessionId = response[0]['hub_studentsessionid'];
+            updatedEventObj['sessiontype'] = response[0]['hub_sessiontype'];
+            updatedEventObj['sessionStatus'] = response[0]['hub_session_status'];
+            updatedEventObj['isAttended'] = response[0]['hub_isattended'];
+            if (updatedEventObj.hasOwnProperty('isFromMasterSchedule')) {
+                delete updatedEventObj.isFromMasterSchedule;
+                updatedEventObj['sessionStatus'] = self.config.SCHEDULE_STATUS;
+            }
+            if (eventObj.student.start.getTime() != updatedEventObj.start.getTime()) {
+                if (updatedEventObj['pinId']) {
+                    delete updatedEventObj['pinId'];
+                }
+            }
+            eventObj.student = updatedEventObj;
+            self.createEventFromSA(eventObj,creationObj.newStart,creationObj.newEnd,creationObj.resourceId);
+            response.forEach(function (unexcusedObj,index) {
+                if (index != 0) {
+                    self.saList.forEach(function (studentInSA, saIndex) {
+                        if (studentInSA["sessionId"] == unexcusedObj["hub_studentsessionid"] && unexcusedObj["hub_session_status"] == self.config.REMOVED_BY_SYSTEM) {
+                            self.saList.splice(saIndex, 1);
+                        }
+                    });
+                }
+            });
+        } else if (typeof response == "object" && response.code == self.config.ETAG_CODE) {
+            self.dialogBodyText = response.message;
+            self.refreshConfirmation.show();
+        } else {
+            self.dialogBodyText = response;
+            self.prompt.show();
         }
     }
 
