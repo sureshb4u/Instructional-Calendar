@@ -18,16 +18,16 @@ import * as data from './interface/calendar-view';
             state('void', style({ width: '275px' })),
             transition('min <=> max', [
               group([
-                query('@rotation', animateChild()),
+                query('@fade', animateChild()),
                 animate('0.5s ease'),
               ]),
             ]),
         ]),
-    trigger('rotation',[
-      state('default', style({ transform: 'rotate(0)' })),
-      state('rotated', style({ transform: 'rotate(-180deg)' })),
-      transition('rotated => default', animate('400ms ease-out')),
-      transition('default => rotated', animate('400ms ease-in'))
+    trigger('fade',[
+      state('default', style({ opacity: '1',display:'block' })),
+      state('faded', style({ opacity: '0',display:'none' })),
+      transition('faded => default', animate('400ms ease-out')),
+      transition('default => faded', animate('400ms ease-in'))
     ])
   ]
 })
@@ -38,8 +38,9 @@ export class AppComponent implements OnInit {
   config:any = {};
   @ViewChild("calendarContainer") calendarContainerDiv:any;
   @ViewChild("filterContainer") filterContainerDiv:any;
-  expandFlag = "max";  
-  rotationFlag = "default";
+  expandFlag = "min"; 
+  fadeFlag = "default";  
+  headerFlag = "faded";
   constructor(private appConfig:AppConstants,private ngxService: NgxUiLoaderService,private cdr:ChangeDetectorRef){
 
   }
@@ -56,7 +57,10 @@ export class AppComponent implements OnInit {
 
   toggleExpansion(){
     this.expandFlag = (this.expandFlag === 'max' ? 'min' : 'max');
-    this.rotationFlag = (this.rotationFlag === 'default' ? 'rotated' : 'default');
+    this.fadeFlag = (this.fadeFlag === 'default' ? 'faded' : 'default');
+    this.headerFlag = (this.fadeFlag === 'default' ? 'faded' : 'default');
+    var iconsEl:any = document.querySelector(".additionalPanes");
+    iconsEl.style.opacity = (iconsEl.style.opacity == '0' ? '1':'0');
     this.filterContainerDiv.toggleFadeProp();    
     this.calendarContainerDiv.toggleExpansion();
   }
