@@ -4,32 +4,28 @@
 .teacherContainer{text-align: center;color: #000;font-weight: bold;z-index: 1;min-height: 20px;}
 .studentContainer{z-index: 1;min-height: 20px;}
 .placeHolderText{color: #9f9f9f;}
-.additionalPanes{ float: right;  position: fixed; z-index: 10; background-color: #fff; right: 2px;  border: 1px solid #ccc;  width: 55px;  height: 100%;  text-align: center;}
+.additionalPanes{ float: left;transition: all 0.4s ease;  position: fixed; z-index: 11; background-color: #fff; left: 0px;  width: 70px;  height: 100%;  text-align: center;top:50px;}
 .additionalPanes div{    
   text-align: center;
   cursor: pointer;
-  color: #fff;
   font-weight: bold;
+  border-top: 1px solid #e1e1e1;
   height: 40px;
   font-size: 12px;
-  border-radius: 50px;
-  box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
-  margin: 8px;
-  padding-top: 12px;
   vertical-align: baseline;
-  background-color: #4285f4;
-  width: 40px;
+  padding: 8px;
+  margin: 8px 0px;
 }
 .rightPane{
-  right: 0px;
+  left: 0px;
   position: fixed;
   float: right;
-  width: 250px;
+  width: 275px;
   background-color: #fff;
-  top: 75px;
+  top: 0px;
   border: 1px solid #ccc;
   height: 100%;
-  z-index: 10;
+  z-index: 12;
 }
 .staffTimingContainer{
   padding: 8px;
@@ -146,13 +142,13 @@
 .countDiv{
   width: 20px;
   height: 20px;
-  top: 22px;
+  top: 32px;
   margin: 0px;
   color: #fff;
   padding: 2px;
   box-shadow: 2px 3px 5px 1px rgba(0, 0, 0, 0.16), 1px 3px 9px 2px rgba(0, 0, 0, 0.12);
   display: inline-block;
-  left: 14px;
+  left: 18px;
   position: relative;
   border-radius: 50px;
   background-color: #CC0000;
@@ -164,4 +160,11 @@
   width: 10px;
   height: 10px;
   display: inline-block;
+}
+.tick{
+  color: green;
+  transform: rotate(-12deg);
+}
+.additionalPanes mdb-icon{
+  font-size:24px;
 }
