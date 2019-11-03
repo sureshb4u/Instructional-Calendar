@@ -35,7 +35,11 @@
              GRP
          </label>
       </div>
-      <i class="fas fa-sync-alt p-2" id="reload" (click)="reloadCalendarData()"></i>
+      <div class="fr">
+        <i class="fas fa-sync-alt p-2" id="reload" (click)="reloadCalendarData()"></i>
+        <button type="button" id="markAllAttendance"  mdbBtn color="dark-green" mdbWavesEffect *ngIf="view == 'day'" 
+        (click)="customDayView.markAllAttended($event)">Mark All Attended</button>
+      </div>
   </div>
   <ng-template #customEventTemplate let-event = "event" >
         <div class="fc-event-content">
