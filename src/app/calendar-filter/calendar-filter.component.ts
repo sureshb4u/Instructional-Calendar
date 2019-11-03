@@ -36,7 +36,7 @@ export class CalendarFilterComponent implements OnInit {
   selectedDate: any = { jsdate: new Date() };
   public myDatePickerOptions: IMyDpOptions ;
 
-  fadeProp = "out";
+  fadeProp = "in";
   
 
   onDateChanged(event: IMyDateModel) {
