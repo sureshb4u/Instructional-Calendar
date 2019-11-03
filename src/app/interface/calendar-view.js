@@ -8038,5 +8038,12 @@ export function Data() {
   this.openEnrollment = function(enrollmentID){
     return true;
   }
+  this.markAllAttended = function (centerId,selecedDate) {
+    return true;
+  }
+
+  this.scheduleExcused = function(objSession, makeupObj){
+    return true;
+  }
 
 }  
