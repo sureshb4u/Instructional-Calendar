@@ -10,5 +10,15 @@
   border: 0px;
   -webkit-box-shadow: 4px -1px 10px 0px rgba(0,0,0,.16);
   box-shadow: 4px -1px 10px 0px rgba(0,0,0,.16);
+  transition: all 0.5s ease;
 }
 
+.calendarIcon{
+  font-size: 24px;
+  padding: 12px;
+}
+.crossIcon{
+  float: right;
+  color: #000;
+  cursor: pointer;
+}
