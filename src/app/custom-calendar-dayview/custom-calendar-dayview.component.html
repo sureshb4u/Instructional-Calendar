@@ -83,6 +83,7 @@
                   <span> {{student.name}}<span *ngIf="student.grade">, {{student.grade}}</span></span>
                   <span *ngIf="student.sessiontype == config.FLOAT_TYPE" class="typeIndicator"> <mdb-badge color="cyan">F</mdb-badge></span>
                   <span *ngIf="student.sessiontype == config.MAKEUP_TYPE" class="typeIndicator"> <mdb-badge color="cyan">MU</mdb-badge></span>
+                  <mdb-icon class="tick" *ngIf="student.isAttended" fas icon="check"></mdb-icon>
               </span>
             </div>
           </div>
@@ -112,6 +113,8 @@
                 <i *ngIf="student.pinId" class="fas fa-thumbtack"></i> 
                 <span> {{student.name}}<span *ngIf="student.grade">, {{student.grade}}</span></span>
                 <span style="padding-left:5px;" [ngStyle]="student.iconStyle" class="dot"></span><span *ngIf="student.serviceValue" [mdbTooltip]="student.serviceValue" placement="right"></span>
+                <mdb-icon class="tick" *ngIf="student.isAttended" fas icon="check"></mdb-icon>
+
             </div>
           </div>
       </div>
@@ -134,13 +137,13 @@
 <div class="additionalPanes">
     <span class="countDiv" *ngIf="sofCount">{{sofCount}}</span>         
     <div (click)="pane = 'SOF';toggleRightPane()">  
-      SOF
+      <mdb-icon fab icon="stack-overflow"></mdb-icon>
     </div>
     <div (click)="pane = 'TA';toggleRightPane()">
-        TA
+      <mdb-icon fas icon="user-tie"></mdb-icon>
     </div>
     <div (click)="pane = 'SA';toggleRightPane()">
-        SA
+      <mdb-icon fas icon="graduation-cap"></mdb-icon>
     </div>
 </div>
 
@@ -161,7 +164,7 @@
 
 <!-- RIGHT PANE CONTENT -->
 
-<div [@visibilityChanged]="visibility" class="rightPane" >
+<div [@visibilityChanged]="visibility" class="rightPane">
   <div *ngIf="pane == 'SOF'">
       <div class="rightPaneHeader">
         Students Overflow <span (click)="toggleRightPane()">X</span>
@@ -494,6 +497,32 @@
         <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="rescheduleStudent()">Reschedule</button>
         <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
         mdbWavesEffect (click)="reschedulePopup.hide()">Close</button>   
+    </div>
+    </div>
+  </div>
+</div>
+
+<div mdbModal #excuseConfirmation="mdb-modal" class="modal fade top " id="excuseConfirmation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" 
+  aria-hidden="true" (close)="modalClose($event)">
+  <div class="modal-dialog modal-notify cascading-modal modal-info" role="document" >
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="heading lead">Are you sure?</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="excuseConfirmation.hide()">
+          <span aria-hidden="true" class="white-text">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <i class="fa fa-exclamation fa-4x mb-3 primary animated flash"></i>
+          <p>{{dialogBodyText}}</p>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" mdbBtn color="primary" class="btn btn-outline-primary waves-effect waves-light" mdbWavesEffect (click)="ngxService.start();scheduleExcused()">ok</button>
+        <button type="button" mdbBtn color="primary" outline="true" class="btn btn-outline-danger waves-effect" data-dismiss="modal"
+        mdbWavesEffect (click)="excuseConfirmation.hide()">Cancel</button>   
     </div>
     </div>
   </div>
