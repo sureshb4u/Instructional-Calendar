@@ -43,7 +43,7 @@ export class CustomCalendarComponent implements OnInit{
   data = new serverData.Data(); //instance of calendar-view.js
   resourceList = [];
   rawEvent ;
-  expansionFlag = "min";
+  expansionFlag = "max";
   centers:Array<any> = [];
   dropDownConfig:any = {
     displayKey:"hub_centername", //if objects array passed which key to be displayed defaults to description
